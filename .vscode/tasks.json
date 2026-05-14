@@ -94,6 +94,17 @@
       }
     },
     {
+      "label": "just: android-snapshot",
+      "type": "process",
+      "command": "just",
+      "args": ["android-snapshot"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
       "label": "just: doctor",
       "type": "process",
       "command": "just",

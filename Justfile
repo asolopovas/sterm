@@ -62,6 +62,10 @@ install: android-build
 android-debug: _android-doctor
     bun scripts/android-debug.mjs {{app_id}}
 
+# Launch Android app and save a PNG screenshot under tmp/
+android-snapshot: _android-doctor
+    bun scripts/android-snapshot.mjs {{app_id}} tmp
+
 # Remove generated build outputs
 clean:
     bun scripts/clean.mjs
