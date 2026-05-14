@@ -1,46 +1,184 @@
 # sterm
 
-A simple Rust/Tauri remote terminal app built by nesting the working `tsync/rterm` codebase.
+**sterm** is a simple remote terminal app.
 
-- Desktop app: starts a background QUIC host service and shows pairing details.
-- Android app: scans/pastes pairing JSON and opens a terminal session.
-- Reused code is nested under `src-tauri/crates/`:
-  - `rterm-protocol` is used directly for frames, auth, TLS pins, tracker discovery, and token rules.
-  - `rterm-host`, `rterm-client`, and `rterm-relay` are carried into the app tree as the source foundation.
-- The Tauri host/client modules adapt the same direct, tracker, and relay flows for IPC/UI use.
+Run the app on your desktop, scan a QR code with the Android app, and use your desktop shell from your phone.
 
-## Connection modes
+It is built with:
 
-The desktop host always keeps direct QUIC listening available.
+- **Tauri 2** for the desktop/mobile app shell
+- **Rust** for the host, networking, terminal handling, and protocol code
+- **Vue + xterm.js** for the UI and terminal view
+- **QUIC** for encrypted network connections
 
-From the host screen you can choose:
+> ⚠️ **Security note:** this gives another device access to a terminal on your computer. Only pair with devices you trust. Do not share pairing QR codes, tokens, or relay/tracker details publicly.
 
-1. **Direct LAN** — QR contains `host`, `token`, and direct host certificate pin.
-2. **Tracker P2P discovery** — QR contains the UDP BitTorrent-style tracker and room. The host announces to the tracker and the Android client asks the tracker for peers, then connects directly to the host over QUIC.
-3. **Relay rendezvous** — QR contains the relay address. The desktop registers as host with the relay and the Android client connects through the relay pairing flow.
+## What it does
 
-Tracker mode still requires the phone to be able to reach the discovered host UDP port. Use relay rendezvous when NAT/cellular prevents direct UDP reachability.
+- Starts a terminal host on the desktop.
+- Shows a QR code / pairing JSON.
+- Lets the Android app connect to the desktop.
+- Opens an interactive terminal session from the phone.
+- Supports direct LAN, tracker-assisted discovery, and relay-based connection modes.
 
-## Development
+## How to use it
+
+### 1. Start the desktop app
 
 ```bash
 npm install
 npm run tauri dev
 ```
 
-The desktop host listens on UDP port `4433` when available and falls back to an ephemeral UDP port. Allow the app through the OS firewall on private networks.
+The desktop app starts a background host service and shows pairing details.
 
-## Pairing
+### 2. Choose a connection mode
 
-1. Run the desktop app.
-2. Pick direct, tracker P2P, or relay rendezvous.
-3. Scan the QR code from Android, or copy/paste the pairing JSON.
+You can pick one of three modes:
+
+| Mode | Use this when | Notes |
+| --- | --- | --- |
+| **Direct LAN** | Phone and desktop are on the same Wi-Fi/LAN | Fastest and simplest |
+| **Tracker P2P discovery** | Both devices can reach each other, but you want discovery help | Uses a UDP BitTorrent-style tracker to find the host |
+| **Relay rendezvous** | Direct connection does not work, e.g. NAT/cellular/firewall problems | Traffic goes through a relay |
+
+Direct mode is usually the easiest place to start.
+
+### 3. Pair the Android app
+
+On Android:
+
+1. Open the app.
+2. Scan the QR code from the desktop app, or paste the pairing JSON.
+3. Enter the optional password if the desktop host requires one.
 4. Open the terminal session.
 
-## Checks
+## Connection details
+
+The desktop host always tries to keep direct QUIC listening available.
+
+By default it tries UDP port `4433`. If that port is unavailable, it falls back to a random available UDP port.
+
+If the phone cannot connect:
+
+- Make sure both devices are on the same network for **Direct LAN**.
+- Allow the app through your OS firewall, especially on private networks.
+- Try **Relay rendezvous** if you are on cellular, public Wi-Fi, or behind strict NAT.
+
+## Development setup
+
+You need:
+
+- Node.js and npm
+- Rust via `rustup`
+- Tauri 2 prerequisites for your OS
+- For Android work: Android Studio/SDK, NDK, and `adb`
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the desktop dev app:
+
+```bash
+npm run tauri dev
+```
+
+If you use [`just`](https://github.com/casey/just), common commands are available:
+
+```bash
+just doctor       # check required tools
+just dev          # run desktop dev app
+just check        # run frontend + Rust checks
+just build        # build packaged desktop app
+just clean        # remove build outputs
+```
+
+## Useful development commands
+
+Frontend build/type check:
 
 ```bash
 npm run build
-cd src-tauri && cargo check
-cd src-tauri && cargo clippy --all-targets -- -D warnings
 ```
+
+Rust check:
+
+```bash
+cd src-tauri
+cargo check
+```
+
+Rust clippy:
+
+```bash
+cd src-tauri
+cargo clippy --all-targets -- -D warnings
+```
+
+Run all essential checks:
+
+```bash
+just check
+```
+
+## Android development
+
+Build a debug APK for a connected Android device:
+
+```bash
+just android-build
+```
+
+Install it:
+
+```bash
+just android-install
+```
+
+Launch it:
+
+```bash
+just android-run
+```
+
+Build, install, and launch:
+
+```bash
+just install
+```
+
+## Standalone CLI host
+
+There is also a standalone host binary for testing:
+
+```bash
+just host-build
+just host
+```
+
+Example with a specific shell and password:
+
+```bash
+just host ARGS='--shell wsl --password secret'
+```
+
+## Project layout
+
+```text
+src/                         Vue frontend
+src-tauri/                   Tauri/Rust app
+src-tauri/src/               App backend: host, client, pairing, terminal logic
+src-tauri/crates/            Reused protocol/CLI crates
+src-tauri/crates/rterm-protocol  Shared auth, frames, TLS pins, tracker logic
+scripts/                     Dev/debug helper scripts
+```
+
+## Notes for contributors
+
+- Keep pairing secrets out of commits and logs.
+- Prefer `just check` before pushing changes.
+- If connection tests fail, check firewall rules and UDP reachability first.
+- Relay mode is the fallback when direct UDP cannot work.
