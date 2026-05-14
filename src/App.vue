@@ -504,7 +504,12 @@ async function disconnect() {
         <button aria-label="Tab" title="Tab" @click="sendRaw('\t')">⇥</button>
         <button aria-label="Keyboard" title="Keyboard" @click="focusTerminal">⌨</button>
         <button aria-label="Copy selection" title="Copy selection" @click="copyTerminalSelection">⧉</button>
-        <button class="danger" aria-label="Disconnect" title="Disconnect" @click="disconnect">⏻</button>
+        <button class="danger" aria-label="Disconnect" title="Disconnect" @click="disconnect">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3v10" />
+            <path d="M6.7 6.7a8 8 0 1 0 10.6 0" />
+          </svg>
+        </button>
       </nav>
     </main>
   </div>
@@ -568,6 +573,7 @@ dd { margin: 0; font-family: "JetBrains Mono", ui-monospace, monospace; overflow
 .terminal-output .xterm-screen { touch-action: manipulation; }
 .bottom-actions { flex: 0 0 auto; min-height: calc(56px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-around; gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #201f1f; border-top: 1px solid #43474c; }
 .bottom-actions button { min-width: 52px; min-height: 44px; border: 0; border-radius: 12px; background: transparent; color: #c4c6cd; font-size: 22px; }
+.bottom-actions button svg { width: 24px; height: 24px; display: block; margin: auto; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .bottom-actions .danger { color: #ffb4ab; }
 @media (max-width: 720px) {
   .qr-card, .settings-grid { grid-template-columns: 1fr; }
