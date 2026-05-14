@@ -1,18 +1,23 @@
 set shell := ["bash", "-cu"]
 
-# VS Code may launch `just` from PowerShell with a reduced Windows PATH. Export a
-# Windows-style PATH so Git Bash converts these entries to /c/... paths on startup.
-USER_HOME := env_var_or_default('USERPROFILE', env_var_or_default('HOME', ''))
-LOCAL_APPDATA := env_var_or_default('LOCALAPPDATA', if USER_HOME != '' { USER_HOME + '\AppData\Local' } else { '' })
-APPDATA_DIR := env_var_or_default('APPDATA', if USER_HOME != '' { USER_HOME + '\AppData\Roaming' } else { '' })
+# VS Code may launch `just` from PowerShell with a reduced PATH. Add common
+# Windows tool locations in both Git-Bash POSIX form and Windows form so bash can
+# find node/cargo/adb regardless of how the parent terminal normalized PATH.
+USERNAME := env_var_or_default('USERNAME', 'asolo')
+USER_HOME := env_var_or_default('USERPROFILE', 'C:\Users\' + USERNAME)
+LOCAL_APPDATA := env_var_or_default('LOCALAPPDATA', USER_HOME + '\AppData\Local')
+APPDATA_DIR := env_var_or_default('APPDATA', USER_HOME + '\AppData\Roaming')
 NODE_DIR := env_var_or_default('ProgramFiles', 'C:\Program Files') + '\nodejs'
-CARGO_DIR := if USER_HOME != '' { USER_HOME + '\.cargo\bin' } else { '' }
-WINGET_DIR := if LOCAL_APPDATA != '' { LOCAL_APPDATA + '\Microsoft\WinGet\Links' } else { '' }
-WINDOWS_APPS_DIR := if LOCAL_APPDATA != '' { LOCAL_APPDATA + '\Microsoft\WindowsApps' } else { '' }
-NPM_GLOBAL_DIR := if APPDATA_DIR != '' { APPDATA_DIR + '\npm' } else { '' }
-ANDROID_SDK_DIR := env_var_or_default('ANDROID_HOME', if LOCAL_APPDATA != '' { LOCAL_APPDATA + '\Android\Sdk' } else { '' })
-ANDROID_PLATFORM_TOOLS_DIR := if ANDROID_SDK_DIR != '' { ANDROID_SDK_DIR + '\platform-tools' } else { '' }
-export PATH := env_var('PATH') + ';' + NODE_DIR + (if CARGO_DIR != '' { ';' + CARGO_DIR } else { '' }) + (if WINGET_DIR != '' { ';' + WINGET_DIR } else { '' }) + (if WINDOWS_APPS_DIR != '' { ';' + WINDOWS_APPS_DIR } else { '' }) + (if NPM_GLOBAL_DIR != '' { ';' + NPM_GLOBAL_DIR } else { '' }) + (if ANDROID_PLATFORM_TOOLS_DIR != '' { ';' + ANDROID_PLATFORM_TOOLS_DIR } else { '' })
+CARGO_DIR := USER_HOME + '\.cargo\bin'
+WINGET_DIR := LOCAL_APPDATA + '\Microsoft\WinGet\Links'
+WINDOWS_APPS_DIR := LOCAL_APPDATA + '\Microsoft\WindowsApps'
+NPM_GLOBAL_DIR := APPDATA_DIR + '\npm'
+ANDROID_SDK_DIR := env_var_or_default('ANDROID_HOME', LOCAL_APPDATA + '\Android\Sdk')
+ANDROID_PLATFORM_TOOLS_DIR := ANDROID_SDK_DIR + '\platform-tools'
+POSIX_USER_HOME := '/c/Users/' + USERNAME
+POSIX_TOOL_PATH := '/c/Program Files/nodejs:' + POSIX_USER_HOME + '/.cargo/bin:' + POSIX_USER_HOME + '/AppData/Local/Microsoft/WinGet/Links:' + POSIX_USER_HOME + '/AppData/Local/Microsoft/WindowsApps:' + POSIX_USER_HOME + '/AppData/Roaming/npm:' + POSIX_USER_HOME + '/AppData/Local/Android/Sdk/platform-tools'
+WINDOWS_TOOL_PATH := NODE_DIR + ';' + CARGO_DIR + ';' + WINGET_DIR + ';' + WINDOWS_APPS_DIR + ';' + NPM_GLOBAL_DIR + ';' + ANDROID_PLATFORM_TOOLS_DIR
+export PATH := env_var('PATH') + ':' + POSIX_TOOL_PATH + ';' + WINDOWS_TOOL_PATH
 
 # List available tasks
 _default:
