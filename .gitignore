@@ -14,6 +14,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+src-tauri/crates/*/target/
+src-tauri/crates/*/Cargo.lock
 *.local
 
 # Editor directories and files

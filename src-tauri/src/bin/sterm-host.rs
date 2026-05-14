@@ -235,7 +235,7 @@ fn compact_pairing_json(pairing: &PairingPayload) -> Result<String> {
 }
 
 fn print_qr(data: &str) -> Result<()> {
-    let code = qrcode::QrCode::new(data.as_bytes())?;
+    let code = qrcode::QrCode::with_error_correction_level(data.as_bytes(), qrcode::EcLevel::L)?;
     let image = code
         .render::<qrcode::render::unicode::Dense1x2>()
         .dark_color(qrcode::render::unicode::Dense1x2::Dark)

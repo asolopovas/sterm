@@ -2,6 +2,7 @@ node_modules
 dist
 dist-ssr
 src-tauri/target
+src-tauri/crates/*/target
 src-tauri/gen
 tmp
 bun.lock

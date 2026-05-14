@@ -57,6 +57,11 @@ build: doctor
 host ARGS="":
     cargo run --manifest-path {{cargo_manifest}} --bin sterm-host -- {{ARGS}}
 
+# Install standalone host CLIs into Cargo's bin directory
+host-install:
+    cargo install --path src-tauri --bin sterm-host --force --target-dir src-tauri/target
+    cargo install --path src-tauri/crates/rterm-host --force --target-dir src-tauri/target
+
 # Start Android dev app on a connected device/emulator
 android-dev: _android-doctor
     bun tauri android dev --target {{android_target}}
@@ -65,8 +70,8 @@ android-dev: _android-doctor
 android-build: _android-doctor
     bun tauri android build --debug --target {{android_target}}
 
-# Build, install, and launch Android app
-install: android-build
+# Install host CLIs, then build, install, and launch Android app
+install: host-install android-build
     adb install -r {{android_apk}}
     adb shell monkey -p {{app_id}} -c android.intent.category.LAUNCHER 1
 
