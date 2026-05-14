@@ -1,0 +1,13 @@
+[package]
+name = "rterm-host"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+igd = { version = "0.12", features = ["aio"] }
+portable-pty = "0.9"
+quinn = { version = "0.11", default-features = false, features = ["runtime-tokio", "rustls-ring"] }
+rterm-protocol = { path = "../rterm-protocol" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "signal"] }
