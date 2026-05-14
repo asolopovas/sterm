@@ -1,8 +1,10 @@
 set shell := ["bash", "-cu"]
 
 # Ensures Rust installed by rustup is found even when just is launched from a shell
-# that does not include ~/.cargo/bin in PATH.
-PATH := env_var('HOME') + "/.cargo/bin:" + env_var('PATH')
+# that does not include ~/.cargo/bin in PATH. VS Code PowerShell tasks on Windows may
+# not define HOME, so fall back to USERPROFILE.
+HOME_DIR := env_var_or_default('HOME', env_var_or_default('USERPROFILE', ''))
+PATH := if HOME_DIR != '' { HOME_DIR + '/.cargo/bin:' + env_var('PATH') } else { env_var('PATH') }
 
 # List available tasks
 _default:
