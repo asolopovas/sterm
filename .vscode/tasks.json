@@ -10,33 +10,16 @@
   ],
   "tasks": [
     {
-      "label": "just: list",
+      "label": "just: dev",
       "type": "process",
       "command": "just",
-      "args": ["--list"],
-      "problemMatcher": []
-    },
-    {
-      "label": "just: bootstrap",
-      "type": "process",
-      "command": "just",
-      "args": ["bootstrap"],
-      "problemMatcher": []
-    },
-    {
-      "label": "just: doctor",
-      "type": "process",
-      "command": "just",
-      "args": ["doctor"],
-      "group": "test",
-      "problemMatcher": []
-    },
-    {
-      "label": "just: android-doctor",
-      "type": "process",
-      "command": "just",
-      "args": ["android-doctor"],
-      "problemMatcher": []
+      "args": ["dev"],
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
     {
       "label": "just: check",
@@ -58,101 +41,6 @@
       "problemMatcher": ["$tsc", "$rustc"]
     },
     {
-      "label": "just: test",
-      "type": "process",
-      "command": "just",
-      "args": ["test"],
-      "group": "test",
-      "problemMatcher": ["$tsc", "$rustc"]
-    },
-    {
-      "label": "just: frontend-check",
-      "type": "process",
-      "command": "just",
-      "args": ["frontend-check"],
-      "group": "test",
-      "problemMatcher": ["$tsc"]
-    },
-    {
-      "label": "just: frontend-build",
-      "type": "process",
-      "command": "just",
-      "args": ["frontend-build"],
-      "group": "build",
-      "problemMatcher": ["$tsc"]
-    },
-    {
-      "label": "just: frontend-dev",
-      "type": "process",
-      "command": "just",
-      "args": ["frontend-dev"],
-      "isBackground": true,
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "just: frontend-preview",
-      "type": "process",
-      "command": "just",
-      "args": ["frontend-preview"],
-      "isBackground": true,
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "just: rust-check",
-      "type": "process",
-      "command": "just",
-      "args": ["rust-check"],
-      "group": "test",
-      "problemMatcher": ["$rustc"]
-    },
-    {
-      "label": "just: fmt-check",
-      "type": "process",
-      "command": "just",
-      "args": ["fmt-check"],
-      "group": "test",
-      "problemMatcher": ["$rustc"]
-    },
-    {
-      "label": "just: fmt",
-      "type": "process",
-      "command": "just",
-      "args": ["fmt"],
-      "problemMatcher": ["$rustc"]
-    },
-    {
-      "label": "just: clippy",
-      "type": "process",
-      "command": "just",
-      "args": ["clippy"],
-      "group": "test",
-      "problemMatcher": ["$rustc"]
-    },
-    {
-      "label": "just: rust-test",
-      "type": "process",
-      "command": "just",
-      "args": ["rust-test"],
-      "group": "test",
-      "problemMatcher": ["$rustc"]
-    },
-    {
-      "label": "just: lint",
-      "type": "process",
-      "command": "just",
-      "args": ["lint"],
-      "group": "test",
-      "problemMatcher": ["$rustc"]
-    },
-    {
       "label": "just: build-debug",
       "type": "process",
       "command": "just",
@@ -170,38 +58,6 @@
       "args": ["build"],
       "group": "build",
       "problemMatcher": ["$tsc", "$rustc"]
-    },
-    {
-      "label": "just: dev",
-      "type": "process",
-      "command": "just",
-      "args": ["dev"],
-      "isBackground": true,
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "just: dev-debug",
-      "type": "process",
-      "command": "just",
-      "args": ["dev-debug"],
-      "isBackground": true,
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "just: host-build",
-      "type": "process",
-      "command": "just",
-      "args": ["host-build"],
-      "group": "build",
-      "problemMatcher": ["$rustc"]
     },
     {
       "label": "just: host",
@@ -227,28 +83,6 @@
       }
     },
     {
-      "label": "just: android-build",
-      "type": "process",
-      "command": "just",
-      "args": ["android-build"],
-      "group": "build",
-      "problemMatcher": ["$tsc", "$rustc"]
-    },
-    {
-      "label": "just: android-install",
-      "type": "process",
-      "command": "just",
-      "args": ["android-install"],
-      "problemMatcher": ["$rustc"]
-    },
-    {
-      "label": "just: android-run",
-      "type": "process",
-      "command": "just",
-      "args": ["android-run"],
-      "problemMatcher": []
-    },
-    {
       "label": "just: install",
       "type": "process",
       "command": "just",
@@ -260,15 +94,11 @@
       }
     },
     {
-      "label": "just: android-debug",
+      "label": "just: doctor",
       "type": "process",
       "command": "just",
-      "args": ["android-debug"],
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
+      "args": ["doctor"],
+      "problemMatcher": []
     },
     {
       "label": "just: clean",
@@ -276,13 +106,6 @@
       "command": "just",
       "args": ["clean"],
       "problemMatcher": []
-    },
-    {
-      "label": "just: ci",
-      "type": "process",
-      "command": "just",
-      "args": ["ci"],
-      "problemMatcher": ["$tsc", "$rustc"]
     }
   ]
 }
