@@ -34,3 +34,11 @@ tokio = { version = "1", features = ["macros", "net", "sync", "time"] }
 igd = { version = "0.12", features = ["aio"] }
 portable-pty = "0.9"
 
+# Balanced release profile for Tauri distribution builds: better runtime
+# performance and smaller bundles without the full compile-time cost of fat LTO.
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+

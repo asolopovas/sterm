@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "build": "bun run typecheck && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "doctor": "bun scripts/doctor.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",

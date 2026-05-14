@@ -26,8 +26,8 @@ It is built with:
 ### 1. Start the desktop app
 
 ```bash
-npm install
-npm run tauri dev
+bun install
+just dev
 ```
 
 The desktop app starts a background host service and shows pairing details.
@@ -69,59 +69,56 @@ If the phone cannot connect:
 
 You need:
 
-- Node.js and npm
+- Bun
 - Rust via `rustup`
+- [`just`](https://github.com/casey/just)
 - Tauri 2 prerequisites for your OS
 - For Android work: Android Studio/SDK, NDK, and `adb`
 
 Install dependencies:
 
 ```bash
-npm install
+just bootstrap
 ```
 
 Run the desktop dev app:
 
 ```bash
-npm run tauri dev
+just dev
 ```
 
-If you use [`just`](https://github.com/casey/just), common commands are available:
+Common commands:
 
 ```bash
-just doctor       # check required tools
-just dev          # run desktop dev app
-just check        # run frontend + Rust checks
+just doctor       # check required desktop tools
+just check        # fast TypeScript + Rust checks
+just verify       # check + Rust fmt/clippy/tests
+just build-debug  # fast debug build without installers
 just build        # build packaged desktop app
 just clean        # remove build outputs
 ```
 
 ## Useful development commands
 
-Frontend build/type check:
-
-```bash
-npm run build
-```
-
-Rust check:
-
-```bash
-cd src-tauri
-cargo check
-```
-
-Rust clippy:
-
-```bash
-cd src-tauri
-cargo clippy --all-targets -- -D warnings
-```
-
-Run all essential checks:
+Fast app check:
 
 ```bash
 just check
+```
+
+Full local verification:
+
+```bash
+just verify
+```
+
+Individual checks:
+
+```bash
+just frontend-check
+just rust-check
+just lint
+just rust-test
 ```
 
 ## Android development
@@ -162,7 +159,7 @@ just host
 Example with a specific shell and password:
 
 ```bash
-just host ARGS='--shell wsl --password secret'
+just host "--shell wsl --password secret"
 ```
 
 ## Project layout
@@ -179,6 +176,6 @@ scripts/                     Dev/debug helper scripts
 ## Notes for contributors
 
 - Keep pairing secrets out of commits and logs.
-- Prefer `just check` before pushing changes.
+- Prefer `just verify` before pushing changes.
 - If connection tests fail, check firewall rules and UDP reachability first.
 - Relay mode is the fallback when direct UDP cannot work.
