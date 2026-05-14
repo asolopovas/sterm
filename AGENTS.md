@@ -16,6 +16,7 @@ Treat pairing data, passwords, tokens, relay/tracker details, QR payloads, and t
 ## Rules
 
 - Do not add code comments unless absolutely necessary.
+- Run all checks before committing and pushing.
 
 ## Commands
 

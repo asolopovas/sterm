@@ -30,8 +30,20 @@ dev-debug:
 # Fast local check: frontend types + Rust check
 check: _frontend-check _rust-check
 
-# Full pre-commit verification: check + formatting + clippy + tests
-verify: check _fmt-check _clippy _rust-test
+# Fast checks intended for git pre-commit
+precommit:
+    bun run precommit
+
+# Static dead-code and unused dependency analysis
+dead-code:
+    bun run knip
+
+# Dependency and secret scanning
+security:
+    bun run security
+
+# Full pre-commit verification: checks + formatting + linting + security + tests
+verify: check _frontend-format-check _frontend-lint _dead-code _security _fmt-check _clippy _rust-test
 
 # Build fast debug artifacts without packaging installers
 build-debug: _frontend-build
@@ -78,6 +90,18 @@ _frontend-check:
 
 _frontend-build:
     bun run build
+
+_frontend-format-check:
+    bun run format:check
+
+_frontend-lint:
+    bun run lint
+
+_dead-code:
+    bun run knip
+
+_security:
+    bun run security
 
 _rust-check:
     cargo check --manifest-path {{cargo_manifest}}

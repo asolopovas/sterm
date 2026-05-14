@@ -16,7 +16,14 @@ import {
   testInternetP2p,
   updateHostSettings,
 } from "./api";
-import type { HostServiceInfo, PairingPayload, RuntimeInfo, TerminalEvent, TerminalOption, TerminalShell } from "./types";
+import type {
+  HostServiceInfo,
+  PairingPayload,
+  RuntimeInfo,
+  TerminalEvent,
+  TerminalOption,
+  TerminalShell,
+} from "./types";
 
 const runtime = ref<RuntimeInfo | null>(null);
 const hostInfo = ref<HostServiceInfo | null>(null);
@@ -82,7 +89,9 @@ function setupViewportInsets() {
 
 function updateViewportInsets() {
   const viewport = window.visualViewport;
-  const inset = viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0;
+  const inset = viewport
+    ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+    : 0;
   keyboardInset.value = Math.round(inset);
   document.documentElement.style.setProperty("--keyboard-inset", `${keyboardInset.value}px`);
   requestAnimationFrame(() => fitAddon?.fit());
@@ -121,7 +130,10 @@ async function useTrackerPairing() {
 async function useRelayPairing() {
   error.value = "";
   try {
-    hostInfo.value = await enableRelayPairing(relayAddress.value, relayCertSha256.value || undefined);
+    hostInfo.value = await enableRelayPairing(
+      relayAddress.value,
+      relayCertSha256.value || undefined,
+    );
     status.value = hostInfo.value.status;
   } catch (err) {
     error.value = String(err);
@@ -142,7 +154,8 @@ async function runInternetP2pTest() {
   error.value = "";
   probeLog.value = "";
   probeRunning.value = true;
-  const tracker = trackerAddress.value || hostInfo.value?.pairing.tracker || "udp://tracker.opentrackr.org:1337";
+  const tracker =
+    trackerAddress.value || hostInfo.value?.pairing.tracker || "udp://tracker.opentrackr.org:1337";
   const room = trackerRoom.value || hostInfo.value?.pairing.trackerRoom || "sterm-probe";
   const channel = new Channel<TerminalEvent>();
   channel.onmessage = (message) => {
@@ -172,7 +185,8 @@ function parsePairing(): PairingPayload {
     throw new Error("invalid pairing code");
   }
   if (parsed.mode === "direct" && !parsed.host) throw new Error("direct pairing is missing host");
-  if (parsed.mode === "tracker" && !parsed.tracker) throw new Error("tracker pairing is missing tracker");
+  if (parsed.mode === "tracker" && !parsed.tracker)
+    throw new Error("tracker pairing is missing tracker");
   if (parsed.mode === "relay" && !parsed.relay) throw new Error("relay pairing is missing relay");
   return parsed;
 }
@@ -181,7 +195,8 @@ function expandPairing(raw: Record<string, unknown>): PairingPayload {
   if (typeof raw.mode === "string") {
     return raw as unknown as PairingPayload;
   }
-  const mode = raw.m === "d" ? "direct" : raw.m === "t" ? "tracker" : raw.m === "r" ? "relay" : undefined;
+  const mode =
+    raw.m === "d" ? "direct" : raw.m === "t" ? "tracker" : raw.m === "r" ? "relay" : undefined;
   if (!mode) throw new Error("unknown pairing mode");
   return {
     v: Number(raw.v),
@@ -311,7 +326,8 @@ async function openScanner() {
 
 async function startScanner() {
   stopScanner();
-  const Detector = (window as Window & { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector;
+  const Detector = (window as Window & { BarcodeDetector?: BarcodeDetectorConstructor })
+    .BarcodeDetector;
   if (!Detector || !navigator.mediaDevices?.getUserMedia) {
     scannerMessage.value = "Camera QR scanning is unavailable here. Paste the pairing code below.";
     return;
@@ -386,13 +402,22 @@ async function disconnect() {
         <h1>Remote Terminal</h1>
         <p><span :class="['dot', connected || hostInfo?.running ? 'ok' : 'idle']" />{{ status }}</p>
       </div>
-      <button class="icon-button" aria-label="Refresh" @click="isDesktopHost ? refreshServiceInfo() : (screen = 'connect')">↻</button>
+      <button
+        class="icon-button"
+        aria-label="Refresh"
+        @click="isDesktopHost ? refreshServiceInfo() : (screen = 'connect')"
+      >
+        ↻
+      </button>
     </header>
 
     <main v-if="isDesktopHost" class="host-layout">
       <section class="card intro" v-if="hostInfo?.firstRun">
         <h2>Service ready</h2>
-        <p>The desktop host service is running in the background. Keep this app open and allow UDP traffic on your private network if the firewall asks.</p>
+        <p>
+          The desktop host service is running in the background. Keep this app open and allow UDP
+          traffic on your private network if the firewall asks.
+        </p>
       </section>
 
       <section class="card qr-card" v-if="hostInfo">
@@ -401,12 +426,30 @@ async function disconnect() {
           <h2>Pair your Android phone</h2>
           <p>Scan this QR code from the Android client, or copy the pairing code manually.</p>
           <dl>
-            <div><dt>Mode</dt><dd>{{ hostInfo.pairing.mode }}</dd></div>
-            <div v-if="hostInfo.pairing.host"><dt>Host</dt><dd>{{ hostInfo.pairing.host }}</dd></div>
-            <div v-if="hostInfo.pairing.tracker"><dt>Tracker</dt><dd>{{ hostInfo.pairing.tracker }}</dd></div>
-            <div v-if="hostInfo.pairing.relay"><dt>Relay</dt><dd>{{ hostInfo.pairing.relay }}</dd></div>
-            <div><dt>UDP listen</dt><dd>{{ hostInfo.listen }}</dd></div>
-            <div><dt>Certificate pin</dt><dd>{{ hostInfo.certSha256 }}</dd></div>
+            <div>
+              <dt>Mode</dt>
+              <dd>{{ hostInfo.pairing.mode }}</dd>
+            </div>
+            <div v-if="hostInfo.pairing.host">
+              <dt>Host</dt>
+              <dd>{{ hostInfo.pairing.host }}</dd>
+            </div>
+            <div v-if="hostInfo.pairing.tracker">
+              <dt>Tracker</dt>
+              <dd>{{ hostInfo.pairing.tracker }}</dd>
+            </div>
+            <div v-if="hostInfo.pairing.relay">
+              <dt>Relay</dt>
+              <dd>{{ hostInfo.pairing.relay }}</dd>
+            </div>
+            <div>
+              <dt>UDP listen</dt>
+              <dd>{{ hostInfo.listen }}</dd>
+            </div>
+            <div>
+              <dt>Certificate pin</dt>
+              <dd>{{ hostInfo.certSha256 }}</dd>
+            </div>
           </dl>
           <button class="primary" @click="copyPairing">Copy pairing code</button>
         </div>
@@ -414,19 +457,33 @@ async function disconnect() {
 
       <section class="card" v-if="hostInfo">
         <h2>Terminal and authentication</h2>
-        <p>Choose which host shell new phone sessions open, and optionally require a password in addition to the QR pairing secret.</p>
+        <p>
+          Choose which host shell new phone sessions open, and optionally require a password in
+          addition to the QR pairing secret.
+        </p>
         <div class="settings-grid">
           <label>
             Terminal
             <select v-model="selectedShell">
-              <option v-for="option in terminalOptions" :key="option.shell" :value="option.shell" :disabled="!option.available">
-                {{ option.label }}{{ option.available ? '' : ' (not installed)' }}
+              <option
+                v-for="option in terminalOptions"
+                :key="option.shell"
+                :value="option.shell"
+                :disabled="!option.available"
+              >
+                {{ option.label }}{{ option.available ? "" : " (not installed)" }}
               </option>
             </select>
           </label>
           <label>
             Password before connect
-            <input v-model="hostPassword" type="password" placeholder="optional" autocomplete="new-password" maxlength="256" />
+            <input
+              v-model="hostPassword"
+              type="password"
+              placeholder="optional"
+              autocomplete="new-password"
+              maxlength="256"
+            />
           </label>
           <button class="secondary" @click="saveHostSettings">Update QR</button>
         </div>
@@ -434,11 +491,18 @@ async function disconnect() {
 
       <section class="card p2p-card" v-if="hostInfo">
         <h2>P2P discovery and rendezvous</h2>
-        <p>Direct LAN stays available. Enable the original tsync BitTorrent-style UDP tracker discovery or relay rendezvous and the QR code updates.</p>
+        <p>
+          Direct LAN stays available. Enable the original tsync BitTorrent-style UDP tracker
+          discovery or relay rendezvous and the QR code updates.
+        </p>
         <div class="settings-grid">
           <label>
             UDP tracker
-            <input v-model="trackerAddress" placeholder="udp://tracker.example:6969" maxlength="256" />
+            <input
+              v-model="trackerAddress"
+              placeholder="udp://tracker.example:6969"
+              maxlength="256"
+            />
           </label>
           <label>
             Room
@@ -458,9 +522,13 @@ async function disconnect() {
           <button class="secondary" @click="useRelayPairing">Use relay rendezvous</button>
         </div>
         <button class="primary" :disabled="probeRunning" @click="runInternetP2pTest">
-          {{ probeRunning ? 'Testing…' : 'Test internet P2P first' }}
+          {{ probeRunning ? "Testing…" : "Test internet P2P first" }}
         </button>
-        <p class="helper">Run this on desktop and Android at the same time with the same tracker and room. It checks STUN, tracker announce, and direct UDP hole-punch reachability before we depend on it for terminal traffic.</p>
+        <p class="helper">
+          Run this on desktop and Android at the same time with the same tracker and room. It checks
+          STUN, tracker announce, and direct UDP hole-punch reachability before we depend on it for
+          terminal traffic.
+        </p>
         <pre v-if="probeLog" class="probe-log">{{ probeLog }}</pre>
         <p v-if="error" class="error">{{ error }}</p>
       </section>
@@ -473,13 +541,21 @@ async function disconnect() {
 
     <main v-else-if="screen === 'connect'" class="connect-layout">
       <div class="focus-icon">▦</div>
-      <p class="helper">Scan a QR code from the host app to establish a secure terminal connection.</p>
+      <p class="helper">
+        Scan a QR code from the host app to establish a secure terminal connection.
+      </p>
       <button class="primary" @click="openScanner">Scan QR Code</button>
       <textarea v-model="pairingText" placeholder="Or paste pairing JSON here" maxlength="4096" />
-      <input v-model="pairingPassword" type="password" placeholder="Password, if host requires one" autocomplete="current-password" maxlength="256" />
+      <input
+        v-model="pairingPassword"
+        type="password"
+        placeholder="Password, if host requires one"
+        autocomplete="current-password"
+        maxlength="256"
+      />
       <button class="secondary" @click="startTerminal">Connect</button>
       <button class="secondary" :disabled="probeRunning" @click="runInternetP2pTest">
-        {{ probeRunning ? 'Testing…' : 'Test internet P2P first' }}
+        {{ probeRunning ? "Testing…" : "Test internet P2P first" }}
       </button>
       <pre v-if="probeLog" class="probe-log">{{ probeLog }}</pre>
       <p v-if="error" class="error">{{ error }}</p>
@@ -487,13 +563,27 @@ async function disconnect() {
 
     <main v-else-if="screen === 'scanner'" class="scanner-layout">
       <video ref="videoEl" class="camera-feed" muted playsinline />
-      <button class="back" @click="stopScanner(); screen = 'connect'">←</button>
+      <button
+        class="back"
+        @click="
+          stopScanner();
+          screen = 'connect';
+        "
+      >
+        ←
+      </button>
       <div class="scanner-box">
         <span />
       </div>
       <div class="scanner-help">{{ scannerMessage }}</div>
       <textarea v-model="pairingText" placeholder="Paste pairing JSON" maxlength="4096" />
-      <input v-model="pairingPassword" type="password" placeholder="Password, if required" autocomplete="current-password" maxlength="256" />
+      <input
+        v-model="pairingPassword"
+        type="password"
+        placeholder="Password, if required"
+        autocomplete="current-password"
+        maxlength="256"
+      />
       <button class="primary" @click="startTerminal">Connect</button>
     </main>
 
@@ -503,7 +593,9 @@ async function disconnect() {
         <button aria-label="Ctrl-C" title="Ctrl-C" @click="sendRaw('\u0003')">⌃C</button>
         <button aria-label="Tab" title="Tab" @click="sendRaw('\t')">⇥</button>
         <button aria-label="Keyboard" title="Keyboard" @click="focusTerminal">⌨</button>
-        <button aria-label="Copy selection" title="Copy selection" @click="copyTerminalSelection">⧉</button>
+        <button aria-label="Copy selection" title="Copy selection" @click="copyTerminalSelection">
+          ⧉
+        </button>
         <button class="danger" aria-label="Disconnect" title="Disconnect" @click="disconnect">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M12 3v10" />
@@ -525,58 +617,371 @@ async function disconnect() {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
-* { box-sizing: border-box; }
-html, body, #app { min-width: 320px; min-height: 100%; height: 100%; background: #131313; overflow: hidden; }
-body { margin: 0; }
-button, input, textarea { font: inherit; }
-.app-shell { height: 100vh; height: 100dvh; display: flex; flex-direction: column; background: #131313; padding-top: env(safe-area-inset-top); overflow: hidden; }
-.topbar { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; background: #131313; border-bottom: 1px solid #43474c; }
-.topbar h1 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 500; }
-.topbar p { margin: 0; color: #b9c8de; font-size: 14px; display: flex; gap: 6px; align-items: center; }
-.icon-button { width: 48px; height: 48px; border: 0; border-radius: 999px; background: transparent; color: #c4c6cd; font-size: 22px; }
-.icon-button:active, button:active { transform: scale(.97); }
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #43474c; }
-.dot.ok { background: #10b981; }
-.host-layout, .connect-layout { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 24px; }
-.card { width: min(920px, 100%); background: #201f1f; border: 1px solid #43474c; border-radius: 24px; padding: 24px; }
-.intro { background: #1c1b1b; }
-.card h2 { margin: 0 0 8px; font-size: 28px; line-height: 36px; }
-.card p, .helper { color: #c4c6cd; line-height: 24px; }
-.qr-card { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 24px; align-items: center; }
-.qr { background: #fff; border-radius: 16px; padding: 16px; display: grid; place-items: center; }
-.qr svg { width: 100%; height: auto; display: block; }
-dl { display: grid; gap: 10px; margin: 20px 0; }
-dt { color: #8e9197; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
-dd { margin: 0; font-family: "JetBrains Mono", ui-monospace, monospace; overflow-wrap: anywhere; }
-.settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 240px) auto; gap: 12px; align-items: end; margin-top: 16px; }
-.settings-grid label { display: grid; gap: 6px; color: #c4c6cd; font-size: 14px; }
-.settings-grid input, .settings-grid select { min-height: 48px; border-radius: 12px; border: 1px solid #43474c; background: #1c1b1b; color: #e5e2e1; padding: 0 12px; font-family: "JetBrains Mono", ui-monospace, monospace; }
-.primary, .secondary, .danger { min-height: 48px; border-radius: 999px; padding: 0 24px; border: 1px solid transparent; cursor: pointer; }
-.primary { background: #d0e4ff; color: #1e3246; }
-.secondary { background: transparent; color: #d0e4ff; border-color: #8e9197; }
-.danger { color: #ffb4ab; background: transparent; }
-.focus-icon { width: 128px; height: 128px; border-radius: 50%; display: grid; place-items: center; background: #201f1f; border: 1px solid #43474c; font-size: 64px; color: #fff; }
-.connect-layout textarea, .scanner-layout textarea { width: min(560px, 100%); min-height: 120px; border-radius: 16px; border: 1px solid #43474c; background: #1c1b1b; color: #e5e2e1; padding: 14px; font-family: "JetBrains Mono", ui-monospace, monospace; z-index: 2; }
-.connect-layout input, .scanner-layout input { width: min(560px, 100%); min-height: 48px; border-radius: 16px; border: 1px solid #43474c; background: #1c1b1b; color: #e5e2e1; padding: 0 14px; z-index: 2; }
-.error { color: #ffb4ab; }
-.scanner-layout { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px; background: #0e0e0e; overflow: hidden; }
-.camera-feed { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .62; filter: saturate(.75); }
-.back { position: absolute; top: calc(16px + env(safe-area-inset-top)); left: 16px; width: 48px; height: 48px; border-radius: 999px; border: 1px solid #43474c; background: #2a2a2a; color: #fff; }
-.scanner-box { width: 260px; height: 260px; border-radius: 16px; border: 3px solid #fff; box-shadow: 0 0 0 9999px rgba(19,19,19,.7); position: relative; }
-.scanner-box span { position: absolute; left: 24px; right: 24px; top: 50%; height: 1px; background: rgba(255,255,255,.4); }
-.scanner-help { max-width: 360px; text-align: center; background: rgba(42,42,42,.9); border: 1px solid #43474c; border-radius: 999px; padding: 10px 16px; }
-.terminal-layout { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #0c0c0c; padding-bottom: var(--keyboard-inset); transition: padding-bottom 120ms ease-out; }
-.probe-log { width: 100%; max-height: 220px; overflow: auto; margin: 12px 0 0; padding: 12px; border-radius: 12px; background: #0e0e0e; color: #a3be8c; font: 12px/18px "JetBrains Mono", ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
-.terminal-output { flex: 1; min-height: 0; width: 100%; overflow: hidden; background: #0c0c0c; padding: 6px; }
-.terminal-output .xterm { height: 100%; }
-.terminal-output .xterm-viewport { background: #0c0c0c !important; }
-.terminal-output .xterm-screen { touch-action: manipulation; }
-.bottom-actions { flex: 0 0 auto; min-height: calc(56px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-around; gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #201f1f; border-top: 1px solid #43474c; }
-.bottom-actions button { min-width: 52px; min-height: 44px; border: 0; border-radius: 12px; background: transparent; color: #c4c6cd; font-size: 22px; }
-.bottom-actions button svg { width: 24px; height: 24px; display: block; margin: auto; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.bottom-actions .danger { color: #ffb4ab; }
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#app {
+  min-width: 320px;
+  min-height: 100%;
+  height: 100%;
+  background: #131313;
+  overflow: hidden;
+}
+body {
+  margin: 0;
+}
+button,
+input,
+textarea {
+  font: inherit;
+}
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #131313;
+  padding-top: env(safe-area-inset-top);
+  overflow: hidden;
+}
+.topbar {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #131313;
+  border-bottom: 1px solid #43474c;
+}
+.topbar h1 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 500;
+}
+.topbar p {
+  margin: 0;
+  color: #b9c8de;
+  font-size: 14px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.icon-button {
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #c4c6cd;
+  font-size: 22px;
+}
+.icon-button:active,
+button:active {
+  transform: scale(0.97);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #43474c;
+}
+.dot.ok {
+  background: #10b981;
+}
+.host-layout,
+.connect-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+}
+.card {
+  width: min(920px, 100%);
+  background: #201f1f;
+  border: 1px solid #43474c;
+  border-radius: 24px;
+  padding: 24px;
+}
+.intro {
+  background: #1c1b1b;
+}
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 36px;
+}
+.card p,
+.helper {
+  color: #c4c6cd;
+  line-height: 24px;
+}
+.qr-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: 24px;
+  align-items: center;
+}
+.qr {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  place-items: center;
+}
+.qr svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+dl {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0;
+}
+dt {
+  color: #8e9197;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+dd {
+  margin: 0;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 240px) auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 16px;
+}
+.settings-grid label {
+  display: grid;
+  gap: 6px;
+  color: #c4c6cd;
+  font-size: 14px;
+}
+.settings-grid input,
+.settings-grid select {
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid #43474c;
+  background: #1c1b1b;
+  color: #e5e2e1;
+  padding: 0 12px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+.primary,
+.secondary,
+.danger {
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 0 24px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.primary {
+  background: #d0e4ff;
+  color: #1e3246;
+}
+.secondary {
+  background: transparent;
+  color: #d0e4ff;
+  border-color: #8e9197;
+}
+.danger {
+  color: #ffb4ab;
+  background: transparent;
+}
+.focus-icon {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #201f1f;
+  border: 1px solid #43474c;
+  font-size: 64px;
+  color: #fff;
+}
+.connect-layout textarea,
+.scanner-layout textarea {
+  width: min(560px, 100%);
+  min-height: 120px;
+  border-radius: 16px;
+  border: 1px solid #43474c;
+  background: #1c1b1b;
+  color: #e5e2e1;
+  padding: 14px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  z-index: 2;
+}
+.connect-layout input,
+.scanner-layout input {
+  width: min(560px, 100%);
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid #43474c;
+  background: #1c1b1b;
+  color: #e5e2e1;
+  padding: 0 14px;
+  z-index: 2;
+}
+.error {
+  color: #ffb4ab;
+}
+.scanner-layout {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+  background: #0e0e0e;
+  overflow: hidden;
+}
+.camera-feed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.62;
+  filter: saturate(0.75);
+}
+.back {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top));
+  left: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid #43474c;
+  background: #2a2a2a;
+  color: #fff;
+}
+.scanner-box {
+  width: 260px;
+  height: 260px;
+  border-radius: 16px;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 9999px rgba(19, 19, 19, 0.7);
+  position: relative;
+}
+.scanner-box span {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.4);
+}
+.scanner-help {
+  max-width: 360px;
+  text-align: center;
+  background: rgba(42, 42, 42, 0.9);
+  border: 1px solid #43474c;
+  border-radius: 999px;
+  padding: 10px 16px;
+}
+.terminal-layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0c0c0c;
+  padding-bottom: var(--keyboard-inset);
+  transition: padding-bottom 120ms ease-out;
+}
+.probe-log {
+  width: 100%;
+  max-height: 220px;
+  overflow: auto;
+  margin: 12px 0 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #0e0e0e;
+  color: #a3be8c;
+  font:
+    12px/18px "JetBrains Mono",
+    ui-monospace,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.terminal-output {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  background: #0c0c0c;
+  padding: 6px;
+}
+.terminal-output .xterm {
+  height: 100%;
+}
+.terminal-output .xterm-viewport {
+  background: #0c0c0c !important;
+}
+.terminal-output .xterm-screen {
+  touch-action: manipulation;
+}
+.bottom-actions {
+  flex: 0 0 auto;
+  min-height: calc(56px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 4px;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  background: #201f1f;
+  border-top: 1px solid #43474c;
+}
+.bottom-actions button {
+  min-width: 52px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #c4c6cd;
+  font-size: 22px;
+}
+.bottom-actions button svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  margin: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bottom-actions .danger {
+  color: #ffb4ab;
+}
 @media (max-width: 720px) {
-  .qr-card, .settings-grid { grid-template-columns: 1fr; }
-  .host-layout, .connect-layout { padding: 16px; justify-content: flex-start; padding-top: calc(24px + env(safe-area-inset-top)); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .qr-card,
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+  .host-layout,
+  .connect-layout {
+    padding: 16px;
+    justify-content: flex-start;
+    padding-top: calc(24px + env(safe-area-inset-top));
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
 }
 </style>

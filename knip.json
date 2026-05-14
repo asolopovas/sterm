@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["index.html", "scripts/*.mjs"],
+  "project": ["src/**/*.{ts,vue}", "scripts/**/*.mjs"],
+  "ignoreDependencies": [
+    "@tauri-apps/plugin-opener",
+    "@secretlint/secretlint-rule-preset-recommend"
+  ],
+  "ignoreExportsUsedInFile": true
+}

@@ -1,0 +1,8 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: staged web quality
+      run: bun run lint-staged
+    - name: rustfmt
+      glob: "*.rs"
+      run: cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check

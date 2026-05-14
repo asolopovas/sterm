@@ -36,11 +36,11 @@ The desktop app starts a background host service and shows pairing details.
 
 You can pick one of three modes:
 
-| Mode | Use this when | Notes |
-| --- | --- | --- |
-| **Direct LAN** | Phone and desktop are on the same Wi-Fi/LAN | Fastest and simplest |
-| **Tracker P2P discovery** | Both devices can reach each other, but you want discovery help | Uses a UDP BitTorrent-style tracker to find the host |
-| **Relay rendezvous** | Direct connection does not work, e.g. NAT/cellular/firewall problems | Traffic goes through a relay |
+| Mode                      | Use this when                                                        | Notes                                                |
+| ------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------- |
+| **Direct LAN**            | Phone and desktop are on the same Wi-Fi/LAN                          | Fastest and simplest                                 |
+| **Tracker P2P discovery** | Both devices can reach each other, but you want discovery help       | Uses a UDP BitTorrent-style tracker to find the host |
+| **Relay rendezvous**      | Direct connection does not work, e.g. NAT/cellular/firewall problems | Traffic goes through a relay                         |
 
 Direct mode is usually the easiest place to start.
 

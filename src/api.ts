@@ -1,5 +1,12 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
-import type { HostServiceInfo, PairingPayload, RuntimeInfo, TerminalEvent, TerminalOption, TerminalShell } from "./types";
+import type {
+  HostServiceInfo,
+  PairingPayload,
+  RuntimeInfo,
+  TerminalEvent,
+  TerminalOption,
+  TerminalShell,
+} from "./types";
 
 export function runtimeInfo() {
   return invoke<RuntimeInfo>("runtime_info");
@@ -7,10 +14,6 @@ export function runtimeInfo() {
 
 export function serviceInfo() {
   return invoke<HostServiceInfo>("service_info");
-}
-
-export function pairingPayload() {
-  return invoke<PairingPayload>("pairing_payload");
 }
 
 export function availableTerminals() {

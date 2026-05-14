@@ -9,7 +9,17 @@
     "build": "bun run typecheck && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "doctor": "bun scripts/doctor.mjs"
+    "doctor": "bun scripts/doctor.mjs",
+    "prepare": "lefthook install",
+    "lint": "eslint . --cache --max-warnings=0",
+    "lint:fix": "eslint . --cache --fix",
+    "lint-staged": "lint-staged",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "secrets": "secretlint \"**/*.{js,mjs,cjs,ts,tsx,vue,json,jsonc,md,yml,yaml}\"",
+    "knip": "knip",
+    "precommit": "lefthook run pre-commit",
+    "security": "bun audit --audit-level high && bun run secrets"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",
@@ -19,10 +29,28 @@
     "vue": "^3.5.34"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@secretlint/secretlint-rule-preset-recommend": "^13.0.0",
     "@tauri-apps/cli": "^2.11.1",
     "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/eslint-config-typescript": "^14.7.0",
+    "eslint": "^10.3.0",
+    "eslint-plugin-vue": "^10.9.1",
+    "globals": "^17.6.0",
+    "knip": "^6.13.1",
+    "lefthook": "^2.1.6",
+    "lint-staged": "^17.0.4",
+    "prettier": "^3.8.3",
+    "secretlint": "^13.0.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.13",
     "vue-tsc": "^3.2.9"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,vue,json,jsonc,css,html,md,yml,yaml}": [
+      "prettier --check",
+      "secretlint"
+    ],
+    "*.{js,mjs,cjs,ts,tsx,vue}": "eslint --cache --max-warnings=0"
   }
 }
