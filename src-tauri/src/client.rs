@@ -221,10 +221,7 @@ async fn connect_to_addr(
     .context("auth challenge timed out")??
     .context("server closed before auth challenge")?;
     let nonce = rterm_protocol::parse_challenge_frame(&challenge)?;
-    let auth_secret = match password.filter(|value| !value.is_empty()) {
-        Some(password) => format!("{token}\0{password}"),
-        None => token.to_string(),
-    };
+    let auth_secret = rterm_protocol::auth_secret(token, password);
     let auth_response =
         rterm_protocol::auth_response_frame(config::ROLE_CLIENT, auth_secret.as_bytes(), &nonce)?;
     rterm_protocol::write_frame(&mut send, &auth_response).await?;

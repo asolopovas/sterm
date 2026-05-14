@@ -290,6 +290,10 @@ async function sendRaw(data: string) {
   await sendTerminalInput(sessionId.value, data);
 }
 
+function focusTerminal() {
+  xterm?.focus();
+}
+
 async function copyTerminalSelection() {
   const selected = xterm?.getSelection();
   const text = selected && selected.length > 0 ? selected : terminal.value;
@@ -422,7 +426,7 @@ async function disconnect() {
           </label>
           <label>
             Password before connect
-            <input v-model="hostPassword" type="password" placeholder="optional" autocomplete="new-password" />
+            <input v-model="hostPassword" type="password" placeholder="optional" autocomplete="new-password" maxlength="256" />
           </label>
           <button class="secondary" @click="saveHostSettings">Update QR</button>
         </div>
@@ -434,22 +438,22 @@ async function disconnect() {
         <div class="settings-grid">
           <label>
             UDP tracker
-            <input v-model="trackerAddress" placeholder="udp://tracker.example:6969" />
+            <input v-model="trackerAddress" placeholder="udp://tracker.example:6969" maxlength="256" />
           </label>
           <label>
             Room
-            <input v-model="trackerRoom" placeholder="default" />
+            <input v-model="trackerRoom" placeholder="default" maxlength="64" />
           </label>
           <button class="secondary" @click="useTrackerPairing">Use tracker P2P</button>
         </div>
         <div class="settings-grid">
           <label>
             Relay
-            <input v-model="relayAddress" placeholder="relay.example:4433" />
+            <input v-model="relayAddress" placeholder="relay.example:4433" maxlength="256" />
           </label>
           <label>
             Relay cert pin (optional)
-            <input v-model="relayCertSha256" placeholder="for self-signed relays" />
+            <input v-model="relayCertSha256" placeholder="for self-signed relays" maxlength="95" />
           </label>
           <button class="secondary" @click="useRelayPairing">Use relay rendezvous</button>
         </div>
@@ -471,8 +475,8 @@ async function disconnect() {
       <div class="focus-icon">▦</div>
       <p class="helper">Scan a QR code from the host app to establish a secure terminal connection.</p>
       <button class="primary" @click="openScanner">Scan QR Code</button>
-      <textarea v-model="pairingText" placeholder="Or paste pairing JSON here" />
-      <input v-model="pairingPassword" type="password" placeholder="Password, if host requires one" autocomplete="current-password" />
+      <textarea v-model="pairingText" placeholder="Or paste pairing JSON here" maxlength="4096" />
+      <input v-model="pairingPassword" type="password" placeholder="Password, if host requires one" autocomplete="current-password" maxlength="256" />
       <button class="secondary" @click="startTerminal">Connect</button>
       <button class="secondary" :disabled="probeRunning" @click="runInternetP2pTest">
         {{ probeRunning ? 'Testing…' : 'Test internet P2P first' }}
@@ -488,17 +492,17 @@ async function disconnect() {
         <span />
       </div>
       <div class="scanner-help">{{ scannerMessage }}</div>
-      <textarea v-model="pairingText" placeholder="Paste pairing JSON" />
-      <input v-model="pairingPassword" type="password" placeholder="Password, if required" autocomplete="current-password" />
+      <textarea v-model="pairingText" placeholder="Paste pairing JSON" maxlength="4096" />
+      <input v-model="pairingPassword" type="password" placeholder="Password, if required" autocomplete="current-password" maxlength="256" />
       <button class="primary" @click="startTerminal">Connect</button>
     </main>
 
     <main v-else class="terminal-layout">
-      <div ref="terminalEl" class="terminal-output" @click="xterm?.focus()" />
+      <div ref="terminalEl" class="terminal-output" @click="focusTerminal" />
       <nav class="bottom-actions">
         <button aria-label="Ctrl-C" title="Ctrl-C" @click="sendRaw('\u0003')">⌃C</button>
         <button aria-label="Tab" title="Tab" @click="sendRaw('\t')">⇥</button>
-        <button aria-label="Keyboard" title="Keyboard" @click="xterm?.focus()">⌨</button>
+        <button aria-label="Keyboard" title="Keyboard" @click="focusTerminal">⌨</button>
         <button aria-label="Copy selection" title="Copy selection" @click="copyTerminalSelection">⧉</button>
         <button class="danger" aria-label="Disconnect" title="Disconnect" @click="disconnect">⏻</button>
       </nav>

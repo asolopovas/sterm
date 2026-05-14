@@ -4,6 +4,7 @@ pub const APP_NAME: &str = "rterm";
 pub const TOKEN_ENV: &str = "RTERM_TOKEN";
 pub const TOKEN_FILE_ENV: &str = "RTERM_TOKEN_FILE";
 pub const MIN_TOKEN_LEN: usize = 32;
+pub const MAX_PASSWORD_LEN: usize = 256;
 pub const SHA256_LEN: usize = 32;
 pub const SHA256_HEX_LEN: usize = SHA256_LEN * 2;
 pub const TOKEN_FILE_UNIX_PRIVATE_MODE_MASK: u32 = 0o077;

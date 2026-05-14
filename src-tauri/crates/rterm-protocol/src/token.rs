@@ -28,6 +28,26 @@ pub fn normalize_token(raw: impl AsRef<str>) -> Result<String> {
     Ok(token)
 }
 
+pub fn validate_password(password: &str) -> Result<()> {
+    anyhow::ensure!(
+        password.len() <= config::MAX_PASSWORD_LEN,
+        "password must be at most {} bytes",
+        config::MAX_PASSWORD_LEN
+    );
+    anyhow::ensure!(
+        !password.contains('\0'),
+        "password must not contain NUL bytes"
+    );
+    Ok(())
+}
+
+pub fn auth_secret(token: &str, password: Option<&str>) -> String {
+    match password.filter(|value| !value.is_empty()) {
+        Some(password) => format!("{token}\0{password}"),
+        None => token.to_string(),
+    }
+}
+
 fn read_token_file(path: &Path) -> Result<String> {
     validate_token_file_permissions(path)?;
     std::fs::read_to_string(path).with_context(|| format!("read token file {}", path.display()))
@@ -82,6 +102,20 @@ mod tests {
     #[test]
     fn token_normalization_rejects_short_value() {
         assert!(normalize_token("short").is_err());
+    }
+
+    #[test]
+    fn auth_secret_combines_token_and_non_empty_password() {
+        assert_eq!(auth_secret("token", Some("pw")), "token\0pw");
+        assert_eq!(auth_secret("token", Some("")), "token");
+        assert_eq!(auth_secret("token", None), "token");
+    }
+
+    #[test]
+    fn password_validation_rejects_nul_and_excessive_length() {
+        assert!(validate_password("correct horse battery staple").is_ok());
+        assert!(validate_password("bad\0password").is_err());
+        assert!(validate_password(&"x".repeat(config::MAX_PASSWORD_LEN + 1)).is_err());
     }
 
     #[cfg(unix)]

@@ -19,6 +19,11 @@ use tauri::Manager;
 use tauri::{ipc::Channel, State};
 use tokio::sync::mpsc;
 
+const MAX_ENDPOINT_INPUT_LEN: usize = 256;
+const MAX_ROOM_INPUT_LEN: usize = 64;
+const MAX_TOKEN_INPUT_LEN: usize = 512;
+const MAX_SESSION_ID_INPUT_LEN: usize = 64;
+
 #[derive(Clone, Default)]
 pub struct AppState {
     inner: Arc<AppStateInner>,
@@ -190,6 +195,9 @@ impl AppState {
                 Some(trimmed)
             }
         });
+        if let Some(password) = password.as_deref() {
+            rterm_protocol::validate_password(password).map_err(|err| err.to_string())?;
+        }
         *self
             .inner
             .host_settings
@@ -330,13 +338,11 @@ fn enable_tracker_pairing(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<HostServiceInfo, String> {
-    let tracker = tracker.trim().to_string();
-    if tracker.is_empty() {
-        return Err("tracker address is required".to_string());
-    }
-    let room = tracker_room
-        .filter(|value| !value.trim().is_empty())
-        .unwrap_or_else(|| rterm_protocol::DEFAULT_TRACKER_ROOM.to_string());
+    let tracker = sanitize_endpoint("tracker address", &tracker)?;
+    let room = match tracker_room {
+        Some(value) if !value.trim().is_empty() => sanitize_room(&value)?,
+        _ => rterm_protocol::DEFAULT_TRACKER_ROOM.to_string(),
+    };
     let key = format!("{tracker}\0{room}");
     let already_running = state.tracker_is_running(&key)?;
     let info =
@@ -353,10 +359,10 @@ fn enable_relay_pairing(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<HostServiceInfo, String> {
-    let relay = relay.trim().to_string();
-    if relay.is_empty() {
-        return Err("relay address is required".to_string());
-    }
+    let relay = sanitize_endpoint("relay address", &relay)?;
+    let relay_cert_sha256 = relay_cert_sha256
+        .map(|pin| sanitize_fingerprint("relay certificate pin", &pin))
+        .transpose()?;
     let key = format!(
         "relay\0{relay}\0{}",
         relay_cert_sha256.as_deref().unwrap_or("")
@@ -400,6 +406,7 @@ async fn connect_terminal(
     on_event: Channel<TerminalEvent>,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
+    validate_pairing_payload(&pairing)?;
     let session_id = new_session_id();
     let (tx, rx) = mpsc::channel::<Vec<u8>>(rterm_protocol::config::STDIN_CHANNEL_CAPACITY);
     state.insert_session(session_id.clone(), tx)?;
@@ -419,6 +426,13 @@ async fn send_terminal_input(
     data: String,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
+    validate_session_id(&session_id)?;
+    if data.len() > rterm_protocol::config::MAX_FRAME {
+        return Err(format!(
+            "terminal input must be at most {} bytes",
+            rterm_protocol::config::MAX_FRAME
+        ));
+    }
     let tx = state.session_sender(&session_id)?;
     tx.send(data.into_bytes())
         .await
@@ -427,6 +441,7 @@ async fn send_terminal_input(
 
 #[tauri::command]
 fn disconnect_terminal(session_id: String, state: State<'_, AppState>) -> Result<(), String> {
+    validate_session_id(&session_id)?;
     state.remove_session(&session_id);
     Ok(())
 }
@@ -437,14 +452,11 @@ async fn test_internet_p2p(
     room: String,
     on_event: Channel<TerminalEvent>,
 ) -> Result<(), String> {
-    let tracker = tracker.trim().to_string();
-    if tracker.is_empty() {
-        return Err("tracker address is required".to_string());
-    }
+    let tracker = sanitize_endpoint("tracker address", &tracker)?;
     let room = if room.trim().is_empty() {
         "sterm-probe".to_string()
     } else {
-        room.trim().to_string()
+        sanitize_room(&room)?
     };
     p2p_probe::run(tracker, room, on_event)
         .await
@@ -509,6 +521,104 @@ fn generate_token() -> String {
     let mut bytes = [0u8; 48];
     OsRng.fill_bytes(&mut bytes);
     general_purpose::STANDARD_NO_PAD.encode(bytes)
+}
+
+fn validate_pairing_payload(pairing: &PairingPayload) -> Result<(), String> {
+    match pairing.mode.as_str() {
+        "direct" => {
+            sanitize_optional_endpoint("host address", pairing.host.as_deref())?
+                .ok_or_else(|| "direct pairing is missing host".to_string())?;
+        }
+        "tracker" => {
+            sanitize_optional_endpoint("host address", pairing.host.as_deref())?;
+            sanitize_optional_endpoint("tracker address", pairing.tracker.as_deref())?
+                .ok_or_else(|| "tracker pairing is missing tracker".to_string())?;
+            if let Some(room) = pairing.tracker_room.as_deref() {
+                sanitize_room(room)?;
+            }
+        }
+        "relay" => {
+            sanitize_optional_endpoint("relay address", pairing.relay.as_deref())?
+                .ok_or_else(|| "relay pairing is missing relay".to_string())?;
+            if let Some(pin) = pairing.relay_cert_sha256.as_deref() {
+                sanitize_fingerprint("relay certificate pin", pin)?;
+            }
+        }
+        _ => return Err("unsupported pairing mode".to_string()),
+    }
+    sanitize_text("pairing token", &pairing.token, MAX_TOKEN_INPUT_LEN)?;
+    sanitize_fingerprint("certificate pin", &pairing.cert_sha256)?;
+    if let Some(password) = pairing.password.as_deref() {
+        rterm_protocol::validate_password(password).map_err(|err| err.to_string())?;
+    }
+    Ok(())
+}
+
+fn validate_session_id(session_id: &str) -> Result<(), String> {
+    if session_id.is_empty() || session_id.len() > MAX_SESSION_ID_INPUT_LEN {
+        return Err("invalid terminal session id".to_string());
+    }
+    if !session_id
+        .bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+    {
+        return Err("invalid terminal session id".to_string());
+    }
+    Ok(())
+}
+
+fn sanitize_optional_endpoint(label: &str, value: Option<&str>) -> Result<Option<String>, String> {
+    value
+        .filter(|value| !value.trim().is_empty())
+        .map(|value| sanitize_endpoint(label, value))
+        .transpose()
+}
+
+fn sanitize_endpoint(label: &str, value: &str) -> Result<String, String> {
+    let value = sanitize_text(label, value, MAX_ENDPOINT_INPUT_LEN)?;
+    if value.is_empty() {
+        return Err(format!("{label} is required"));
+    }
+    if value.contains(['/', '\\']) && !value.starts_with("udp://") {
+        return Err(format!("{label} must be a host:port value"));
+    }
+    Ok(value)
+}
+
+fn sanitize_room(value: &str) -> Result<String, String> {
+    let value = sanitize_text("tracker room", value, MAX_ROOM_INPUT_LEN)?;
+    if value.is_empty() {
+        return Err("tracker room is required".to_string());
+    }
+    if !value
+        .bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.'))
+    {
+        return Err(
+            "tracker room may only contain letters, numbers, '.', '-', and '_'".to_string(),
+        );
+    }
+    Ok(value)
+}
+
+fn sanitize_fingerprint(label: &str, value: &str) -> Result<String, String> {
+    let value = sanitize_text(label, value, rterm_protocol::config::SHA256_HEX_LEN + 31)?;
+    rterm_protocol::parse_sha256_fingerprint(&value).map_err(|err| err.to_string())?;
+    Ok(value)
+}
+
+fn sanitize_text(label: &str, value: &str, max_len: usize) -> Result<String, String> {
+    let value = value.trim().to_string();
+    if value.len() > max_len {
+        return Err(format!("{label} must be at most {max_len} bytes"));
+    }
+    if value
+        .chars()
+        .any(|ch| ch.is_control() || matches!(ch, '<' | '>' | '"' | '\'' | '`'))
+    {
+        return Err(format!("{label} contains unsupported characters"));
+    }
+    Ok(value)
 }
 
 fn new_session_id() -> String {

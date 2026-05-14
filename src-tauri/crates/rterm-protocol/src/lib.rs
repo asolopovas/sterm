@@ -23,7 +23,7 @@ pub use tls::{
     pinned_client_config, self_signed_server_config, server_config, transport_config,
     trusted_client_config, GeneratedServerConfig,
 };
-pub use token::{load_token, normalize_token};
+pub use token::{auth_secret, load_token, normalize_token, validate_password};
 pub use tracker::{
     announce_to_tracker, announce_with_socket, resolve_tracker, tracker_info_hash, TrackerAnnounce,
     TrackerTarget, DEFAULT_TRACKER_ANNOUNCE_INTERVAL, DEFAULT_TRACKER_ROOM,

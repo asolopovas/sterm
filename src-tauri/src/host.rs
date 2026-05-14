@@ -451,7 +451,7 @@ async fn handle_connection(
     .context("client auth timed out")??
     .context("client closed before auth")?;
 
-    let auth_secret = auth_secret(&token, settings.password.as_deref());
+    let auth_secret = rterm_protocol::auth_secret(&token, settings.password.as_deref());
     match rterm_protocol::verify_auth_response(received.as_ref(), auth_secret.as_bytes(), &nonce) {
         Ok(role) if role == config::ROLE_CLIENT => {}
         _ => {
@@ -527,13 +527,6 @@ async fn add_upnp_mapping(
         external_port,
         external_ip,
     })
-}
-
-fn auth_secret(token: &str, password: Option<&str>) -> String {
-    match password.filter(|value| !value.is_empty()) {
-        Some(password) => format!("{token}\0{password}"),
-        None => token.to_string(),
-    }
 }
 
 fn lan_ip() -> Option<IpAddr> {
